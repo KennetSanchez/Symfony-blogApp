@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <title>Mostrar artículo</title>
+</head>
+<body>
+
+<h2>Articulo creado exitosamente</h2>
+
+<table>
+    <tr>
+        <th>
+            Id
+        </th>
+        <th>
+            Título
+        </th>
+        <th>
+            Autor
+        </th>
+        <th>
+            Contenido
+        </th>
+        <th>
+            Categoría
+        </th>
+        <th>
+            Fecha creación
+        </th>
+    </tr>
+
+    <tr>
+        <th>
+            {{ article.id }}
+        </th>
+        <th>
+            {{ article.titulo }}
+        </th>
+        <th>
+            {{ article.autor }}
+        </th>
+        <th>
+            {{ article.contenido }}
+        </th>
+        <th>
+            {{ article.categoria }}
+        </th>
+
+        <th>
+            {{ article.creado | date }}
+        </th>
+    </tr>
+</table>
+
+</body>
+</html>
