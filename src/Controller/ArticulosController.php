@@ -5,10 +5,10 @@ namespace App\Controller;
 use App\Entity\Articulos;
 use App\Repository\ArticulosRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Exception\ORMException;
 use Exception;
-use PhpCsFixer\Fixer\ReturnNotation\ReturnAssignmentFixer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -39,7 +39,8 @@ class ArticulosController extends AbstractController
         return $this->render('articulos/listarArticulos.html.twig', ['articles' => $articulos]);
     }
 
-    private function renderizarArticuloCreado(Articulos $articulo) : Response{
+    private function renderizarArticuloCreado(Articulos $articulo): Response
+    {
         return $this->render('articulos/mostrarArticulo.html.twig', ['article' => $articulo]);
     }
 
@@ -54,18 +55,6 @@ class ArticulosController extends AbstractController
         // return new JsonResponse($articulosJson, 200, [], true);
     }
 
-    #[Route('/{id}', name: 'especifico', methods: 'GET')]
-    public function visualizarArticulo(int $id, ArticulosRepository $articulosRepository, SerializerInterface $serializer): Response
-    {
-        $articulos = $articulosRepository->find($id);
-        if ($articulos) {
-            $articulosJson = $serializer->serialize($articulos, 'json');
-            return new JsonResponse($articulosJson, 200, [], true);
-        } else {
-            return new Response('No existe un artículo con el id: ' . $id);
-        }
-
-    }
 
     #[Route('/', name: 'agregar', methods: 'POST', format: 'json')]
     public function crearArticulo(EntityManagerInterface $entityManager, SerializerInterface $serializer, Request $request): Response
@@ -91,6 +80,43 @@ class ArticulosController extends AbstractController
         return new Response($this->renderizarArticuloCreado($articulo));
     }
 
+    #[Route('/form', name: 'form', methods: 'POST')]
+    public function formularioArticulo(Request $request): Response
+    {
+        $articulo = new Articulos();
+
+        $form = $this->createFormBuilder($articulo)
+            ->add('titulo', TextType::class)
+            ->add('autor', TextType::class)
+            ->add('contenido', TextType::class)
+            ->add('creado', DateType::class)
+            ->add('categoria', TextType::class)
+            ->getForm();
+
+        $form->handleRequest($request);
+        if ($form->isSubmitted() && $form->isValid()) {
+            $articulo = $form->getData();
+            // Guardar en la base de datos
+            return $this->redirectToRoute('articulos__todos');
+        }
+
+        return $this->render('task/new.html.twig', [
+            'form' => $form,
+        ]);
+    }
+
+    #[Route('/{id}', name: 'especifico', methods: 'GET')]
+    public function visualizarArticulo(int $id, ArticulosRepository $articulosRepository, SerializerInterface $serializer): Response
+    {
+        $articulos = $articulosRepository->find($id);
+        if ($articulos) {
+            $articulosJson = $serializer->serialize($articulos, 'json');
+            return new JsonResponse($articulosJson, 200, [], true);
+        } else {
+            return new Response('No existe un artículo con el id: ' . $id);
+        }
+
+    }
 
     #[Route('/{id}/{name}', name: 'modificar_titulo', methods: 'PUT')]
     public function modificarTitulo(EntityManagerInterface $entityManager, ArticulosRepository $articulosRepository, int $id, string $name): Response
@@ -149,5 +175,4 @@ class ArticulosController extends AbstractController
         $entityManager->flush();
         return new Response($this->renderListarArticulos());
     }
-
 }
